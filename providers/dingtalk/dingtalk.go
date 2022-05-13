@@ -29,6 +29,8 @@ var (
 
 var UrlPath string = ""
 
+var ErrUseId = errors.New("userId not exist")
+
 // New creates a new dingtalk provider, and sets up important connection details.
 // You should always call `github.New` to get a new Provider. Never try to create
 // one manually.
@@ -358,6 +360,9 @@ func (p *Provider) fetchUserIdByUnionId(session goth.Session, unionId string) (u
 
 func getUserId(data map[string]interface{}) (userId string, err error) {
 	var result map[string]interface{}
-	result = data["result"].(map[string]interface{})
-	return result["userid"].(string), nil
+	if data["result"] != nil && data["result"] != "" {
+		result = data["result"].(map[string]interface{})
+		return result["userid"].(string), nil
+	}
+	return "", ErrUseId
 }
