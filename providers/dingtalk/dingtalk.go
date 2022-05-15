@@ -29,10 +29,11 @@ var (
 
 var UrlPath string = ""
 
-var ErrUseId = errors.New("userId not exist")
+var ErrUserId = errors.New("userId not exist")
+var ErrNoAccess = errors.New("no access")
 
 // New creates a new dingtalk provider, and sets up important connection details.
-// You should always call `github.New` to get a new Provider. Never try to create
+// You should always call `dingtalk.New` to get a new Provider. Never try to create
 // one manually.
 func New(clientKey, secret, callbackURL, agentId string, scopes ...string) *Provider {
 	return NewCustomisedURL(clientKey, secret, callbackURL, AuthURL, TokenURL, UserIdURL, ProfileURL, unionURL, agentId, scopes...)
@@ -99,7 +100,7 @@ func (p *Provider) Client() *http.Client {
 	return goth.HTTPClientWithFallBack(p.HTTPClient)
 }
 
-// Debug is a no-op for the github package.
+// Debug is a no-op for the dingtalk package.
 func (p *Provider) Debug(debug bool) {}
 
 // BeginAuth asks dingtalk for an authentication end-point.
@@ -191,6 +192,10 @@ func userFromReader(reader io.Reader, user *goth.User) error {
 		return err
 	}
 
+	if r.Errcode == 50002 {
+		return ErrNoAccess
+	}
+
 	user.Name = r.Result.Name
 	user.NickName = r.Result.Name
 	user.AvatarURL = r.Result.Avatar
@@ -218,12 +223,12 @@ func newConfig(provider *Provider, authURL, tokenURL string, scopes []string) *o
 	return c
 }
 
-//RefreshToken refresh token is not provided by github
+//RefreshToken refresh token is not provided by dingtalk
 func (p *Provider) RefreshToken(refreshToken string) (*oauth2.Token, error) {
-	return nil, errors.New("Refresh token is not provided by github")
+	return nil, errors.New("Refresh token is not provided by dingtalk")
 }
 
-//RefreshTokenAvailable refresh token is not provided by github
+//RefreshTokenAvailable refresh token is not provided by dingtalk
 func (p *Provider) RefreshTokenAvailable() bool {
 	return false
 }
@@ -364,5 +369,5 @@ func getUserId(data map[string]interface{}) (userId string, err error) {
 		result = data["result"].(map[string]interface{})
 		return result["userid"].(string), nil
 	}
-	return "", ErrUseId
+	return "", ErrUserId
 }
