@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -68,7 +69,7 @@ func BeginAuthHandler(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintln(res, err)
 		return
 	}
-
+	log.Printf("redirect url:%s", url)
 	http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 }
 
